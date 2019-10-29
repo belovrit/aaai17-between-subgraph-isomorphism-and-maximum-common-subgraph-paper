@@ -8,6 +8,7 @@
 #include <boost/program_options.hpp>
 
 #include <iostream>
+#include <fstream>
 #include <exception>
 #include <cstdlib>
 #include <chrono>
@@ -17,6 +18,7 @@
 
 namespace po = boost::program_options;
 
+using namespace std;
 using std::chrono::steady_clock;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
@@ -127,6 +129,7 @@ auto main(int argc, char * argv[]) -> int
             ("algorithm",    "Specify which algorithm to use")
             ("pattern-file", "Specify the pattern file (LAD format)")
             ("target-file",  "Specify the target file (LAD format)")
+            ("output-path",  "Specify the output file path")
             ;
 
         all_options.add(display_options);
@@ -136,6 +139,7 @@ auto main(int argc, char * argv[]) -> int
             .add("algorithm", 1)
             .add("pattern-file", 1)
             .add("target-file", 1)
+            .add("output-path", 1)
             ;
 
         po::variables_map options_vars;
@@ -154,8 +158,8 @@ auto main(int argc, char * argv[]) -> int
         }
 
         /* No algorithm or no input file specified? Show a message and exit. */
-        if (! options_vars.count("algorithm") || ! options_vars.count("pattern-file") || ! options_vars.count("target-file")) {
-            std::cout << "Usage: " << argv[0] << " [options] algorithm pattern target" << std::endl;
+        if (! options_vars.count("algorithm") || ! options_vars.count("pattern-file") || ! options_vars.count("target-file")  || ! options_vars.count("output-path")) {
+            std::cout << "Usage: " << argv[0] << " [options] algorithm pattern target output-path" << std::endl;
             return EXIT_FAILURE;
         }
 
@@ -209,6 +213,8 @@ auto main(int argc, char * argv[]) -> int
             read_function(options_vars["pattern-file"].as<std::string>()),
             read_function(options_vars["target-file"].as<std::string>()));
 
+        auto output_path = options_vars["output-path"].as<std::string>();
+
         /* Do the actual run. */
         bool aborted = false;
         auto result = run_this(algorithm->second)(
@@ -229,6 +235,25 @@ auto main(int argc, char * argv[]) -> int
 
         for (auto v : result.isomorphism)
             std::cout << "(" << v.first << " -> " << v.second << ") ";
+
+        /*
+            Added by Alex Wang: Write the result of node mapping according to Chris's format 
+        */
+        ofstream temp_out;
+        temp_out.open (output_path + "/output.csv");
+        temp_out << result.nodes << std::endl;
+        temp_out << "{";
+        unsigned int iso_num = 0;
+        for (auto v : result.isomorphism) {
+            temp_out << v.first << ":" << v.second;
+            iso_num++;
+            if (iso_num < result.isomorphism.size())
+                temp_out << ",";
+        }
+        temp_out << "}" << std::endl;
+        temp_out << overall_time.count() << std::endl;
+        temp_out.close();
+
         std::cout << std::endl;
 
         std::cout << overall_time.count();
