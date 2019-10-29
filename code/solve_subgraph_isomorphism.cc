@@ -241,7 +241,12 @@ auto main(int argc, char * argv[]) -> int
         */
         ofstream temp_out;
         temp_out.open (output_path + "/output.csv");
-        temp_out << result.nodes << std::endl;
+        unsigned int mcs_except = 0;
+        for (auto v : result.isomorphism) {
+            if (v.second < 0) 
+                mcs_except++;
+        }
+        temp_out << graphs.first.size() - mcs_except << std::endl;
         temp_out << "{";
         unsigned int iso_num = 0;
         for (auto v : result.isomorphism) {

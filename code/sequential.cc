@@ -849,7 +849,7 @@ auto sequential_ix_subgraph_isomorphism(const pair<Graph, Graph> & graphs, const
             return modified_result;
         }
         else {
-            cerr << "-- " << pass_time.count() << " <" << graphs.first.size() - modified_params.except << endl;
+            //cerr << "-- " << pass_time.count() << " <" << graphs.first.size() - modified_params.except << endl;
             modified_result.stats.emplace("FAIL" + to_string(modified_params.except), to_string(pass_time.count()));
         }
 
