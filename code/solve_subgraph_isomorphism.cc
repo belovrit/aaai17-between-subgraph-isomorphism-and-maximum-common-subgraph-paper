@@ -58,7 +58,7 @@ auto run_this_wrapped(const std::function<Result_ (const Data_ &, const Params_ 
         }
 
         /* Start the clock */
-        params.start_time = std::chrono::steady_clock::now();
+        params.start_time = clock();//std::chrono::steady_clock::now();
 
         try {
             auto result = func(data, params);
@@ -224,8 +224,10 @@ auto main(int argc, char * argv[]) -> int
                 options_vars.count("timeout") ? options_vars["timeout"].as<int>() : 0);
 
         /* Stop the clock. */
-        auto overall_time = duration_cast<milliseconds>(steady_clock::now() - params.start_time);
-
+        //auto overall_time = duration_cast<milliseconds>(std::chrono::steady_clock::now() - params.start_time);
+        clock_t end = clock();
+        double time_taken = double(end - params.start_time) / double(CLOCKS_PER_SEC);
+        //std::cout << time_taken << std::endl;
         /* Display the results. */
         std::cout << std::boolalpha << ! result.isomorphism.empty() << " " << result.nodes;
 
@@ -256,17 +258,17 @@ auto main(int argc, char * argv[]) -> int
                 temp_out << ",";
         }
         temp_out << "}" << std::endl;
-        temp_out << overall_time.count() << std::endl;
+        temp_out << std::fixed << time_taken*1000 << std::endl;
         temp_out.close();
 
         std::cout << std::endl;
 
-        std::cout << overall_time.count();
+        //std::cout << time_taken << std::endl;
         if (! result.times.empty()) {
             for (auto t : result.times)
                 std::cout << " " << t.count();
         }
-        std::cout << std::endl;
+        std::cout << " " << std::endl;
 
         if (! result.stats.empty()) {
             for (auto & s : result.stats) {
